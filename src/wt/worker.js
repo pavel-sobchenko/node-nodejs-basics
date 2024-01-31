@@ -5,11 +5,18 @@ const __filename = fileURLToPath(import.meta.url);
 
 const nthFibonacci = (n) => n < 2 ? n : nthFibonacci(n - 1) + nthFibonacci(n - 2);
 
+const calculateResult = n => n*2;
+
+const inputData = workerData;
+
 const sendResult = () => {
 
+    console.log('####', inputData);
+
     if (isMainThread) {
+        console.log('1')
         const worker = new Worker(__filename, {
-          workerData: { n: 10 },
+          workerData,
         });
       
         worker.on('message', (result) => {
@@ -24,11 +31,12 @@ const sendResult = () => {
           console.log(`Worker exited with code ${code}`);
         });
       } else {
-        const { n } = workerData;
-      
-        const result = nthFibonacci(n);
-      
-        parentPort.postMessage(result);
+        try {
+            const result = calculateResult(inputData);
+            parentPort.postMessage({ status: 'resolved', data: result });
+          } catch (error) {
+            parentPort.postMessage({ status: 'error', data: null });
+          }
 
       }
 };
